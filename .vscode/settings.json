@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "sdkconfig.h": "c",
+        "task.h": "c",
+        "freertos.h": "c",
+        "tftlcd.h": "c",
+        "gpio.h": "c",
+        "gpio_types.h": "c",
+        "lv_port_disp.h": "c"
+    },
+    "idf.adapterTargetName": "esp32",
+    "idf.portWin": "COM40",
+    "idf.flashType": "UART"
+}
