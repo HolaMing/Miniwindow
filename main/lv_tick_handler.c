@@ -4,7 +4,7 @@
  * @Author: Newt
  * @Date: 2022-10-02 16:25:18
  * @LastEditors: Newt
- * @LastEditTime: 2022-11-13 16:51:02
+ * @LastEditTime: 2022-11-13 22:02:03
  */
 #include <stdio.h>
 #include <stdint.h>
@@ -36,7 +36,7 @@ typedef struct {
 
 static bool IRAM_ATTR timer_group_isr_callback(void *args)
 {
-    lv_tick_inc(1);
+    lv_tick_inc(5);
     return pdTRUE;
 }
 
@@ -72,7 +72,7 @@ static void example_tg_timer_init(int group, int timer, bool auto_reload, int ti
 
 void lv_tick_task()
 {
-    example_tg_timer_init(TIMER_GROUP_0, TIMER_0, true, 1);
+    example_tg_timer_init(TIMER_GROUP_0, TIMER_0, true, 5);
 
     while (1) {
         lv_task_handler();
@@ -84,7 +84,7 @@ void lv_tick_task()
 void lv_tick_handle_init()
 {
     xTaskHandle lv_mian_task;
-    xTaskCreate(lv_tick_task, "lv_mian_task", 3 * 1024, NULL, 15, &lv_mian_task);
+    xTaskCreate(lv_tick_task, "lv_mian_task", 4 * 1024, NULL, 15, &lv_mian_task);
     printf("create lv main task\r\n");
 }
 

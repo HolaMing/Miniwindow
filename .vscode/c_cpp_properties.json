@@ -7,7 +7,8 @@
                 "C:/Espressif/frameworks/esp-idf-v4.4.2/components/driver/include",
                 "C:/Espressif/frameworks/esp-idf-v4.4.2/components/hal/include",
                 "C:\\Espressif/frameworks/esp-idf-v4.4.2/components/freertos",
-                "C:/Espressif/frameworks/esp-idf-v4.4.2/components/freertos/include"
+                "C:/Espressif/frameworks/esp-idf-v4.4.2/components/freertos/include",
+                "C:/Espressif/frameworks/esp-idf-v4.4.2/components/freertos/include/esp_additions"
             ],
             "defines": [
                 "_DEBUG",

@@ -6,7 +6,9 @@
         "tftlcd.h": "c",
         "gpio.h": "c",
         "gpio_types.h": "c",
-        "lv_port_disp.h": "c"
+        "lv_port_disp.h": "c",
+        "lvgl.h": "c",
+        "freertosconfig.h": "c"
     },
     "idf.adapterTargetName": "esp32",
     "idf.portWin": "COM40",

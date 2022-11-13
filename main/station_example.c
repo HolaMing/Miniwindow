@@ -10,6 +10,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "freertos/queue.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
@@ -27,6 +28,8 @@
 #include "aiot_mqtt_api.h"
 #include "aiot_ntp_api.h"
 
+xQueueHandle ntp_time_qhandle;
+xQueueHandle request_time_qhandle;
 
 /* The examples use WiFi configuration that you can set via project configuration menu
 
@@ -344,27 +347,27 @@ int linkkit_main(void)
     }
 
     /* MQTT 订阅topic功能示例, 请根据自己的业务需求进行使用 */
-    {
-        char *sub_topic = "/sys/a13FN5TplKq/mqtt_basic_demo/thing/event/+/post_reply";
+    // {
+    //     char *sub_topic = "/sys/a13FN5TplKq/mqtt_basic_demo/thing/event/+/post_reply";
 
-        res = aiot_mqtt_sub(mqtt_handle, sub_topic, NULL, 1, NULL);
-        if (res < 0) {
-            printf("aiot_mqtt_sub failed, res: -0x%04X\n", -res);
-            return -1;
-        }
-    }
+    //     res = aiot_mqtt_sub(mqtt_handle, sub_topic, NULL, 1, NULL);
+    //     if (res < 0) {
+    //         printf("aiot_mqtt_sub failed, res: -0x%04X\n", -res);
+    //         return -1;
+    //     }
+    // }
 
     /* MQTT 发布消息功能示例, 请根据自己的业务需求进行使用 */
-    {
-        char *pub_topic = "/sys/a13FN5TplKq/mqtt_basic_demo/thing/event/property/post";
-        char *pub_payload = "{\"id\":\"1\",\"version\":\"1.0\",\"params\":{\"LightSwitch\":0}}";
+    // {
+    //     char *pub_topic = "/sys/a13FN5TplKq/mqtt_basic_demo/thing/event/property/post";
+    //     char *pub_payload = "{\"id\":\"1\",\"version\":\"1.0\",\"params\":{\"LightSwitch\":0}}";
 
-        res = aiot_mqtt_pub(mqtt_handle, pub_topic, (uint8_t *)pub_payload, strlen(pub_payload), 0);
-        if (res < 0) {
-            printf("aiot_mqtt_sub failed, res: -0x%04X\n", -res);
-            return -1;
-        }
-    }
+    //     res = aiot_mqtt_pub(mqtt_handle, pub_topic, (uint8_t *)pub_payload, strlen(pub_payload), 0);
+    //     if (res < 0) {
+    //         printf("aiot_mqtt_sub failed, res: -0x%04X\n", -res);
+    //         return -1;
+    //     }
+    // }
 
     /* 创建一个单独的线程, 专用于执行aiot_mqtt_process, 它会自动发送心跳保活, 以及重发QoS1的未应答报文 */
     g_mqtt_process_thread_running = 1;
@@ -456,6 +459,10 @@ void demo_ntp_recv_handler(void *handle, const aiot_ntp_recv_t *packet, void *us
                    (uint16_t)packet->data.local_time.mon, (uint16_t)packet->data.local_time.day,
                    (uint16_t)packet->data.local_time.hour, (uint16_t)packet->data.local_time.min,
                    (uint16_t)packet->data.local_time.sec, (uint16_t)packet->data.local_time.msec);
+            if (ntp_time_qhandle != NULL) {
+                xQueueSend(ntp_time_qhandle, packet, 3000/portTICK_PERIOD_MS);
+                printf("send queue to lv graph of time\r\n");
+            }  
         } break;
 
         default: {
@@ -526,7 +533,7 @@ int get_ali_rtc_update(void *ntp_handle)
     return 0;
 }
 
-void station_example_function(void)
+void station_example_function(void *parameter)
 {
     //Initialize NVS
     esp_err_t ret = nvs_flash_init();
@@ -540,17 +547,25 @@ void station_example_function(void)
     wifi_init_sta();
 
     /* start linkkit mqtt */
-
     ESP_LOGI(TAG, "Start linkkit mqtt");
+    uint8_t request_flag = 0;
     if (linkkit_main() == 0) {
         ntp_handle = get_ali_rtc_init(ntp_handle);
+        ntp_time_qhandle = xQueueCreate(1, sizeof(aiot_ntp_recv_t));
+        request_time_qhandle = xQueueCreate(1, sizeof(uint8_t));
         while (1) {
-            printf("get time222222222222222222\r\n");
+            if (xQueueReceive(request_time_qhandle, &request_flag, portMAX_DELAY) == pdTRUE) {
+                if (request_flag != 0) {
+                    get_ali_rtc_update(ntp_handle);
+                }  
+            }
             vTaskDelay(3000/portTICK_PERIOD_MS);
-            get_ali_rtc_update(ntp_handle);
         }
-    }
 
+    }
+    else {
+
+    }
 }
 
 #endif
