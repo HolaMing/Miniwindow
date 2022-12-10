@@ -448,6 +448,8 @@ void demo_ntp_event_handler(void *handle, const aiot_ntp_event_t *event, void *u
     }
 }
 
+static xTaskHandle graph_ntp_display_handle;
+extern void graph_ntp_display_task(void *parameter);
 /* TODO: 数据处理回调, 当SDK从网络上收到ntp消息时被调用 */
 void demo_ntp_recv_handler(void *handle, const aiot_ntp_recv_t *packet, void *userdata)
 {
@@ -462,6 +464,10 @@ void demo_ntp_recv_handler(void *handle, const aiot_ntp_recv_t *packet, void *us
             if (ntp_time_qhandle != NULL) {
                 xQueueSend(ntp_time_qhandle, packet, 3000/portTICK_PERIOD_MS);
                 printf("send queue to lv graph of time\r\n");
+                if (graph_ntp_display_handle == NULL) {
+                    printf("Start create task graph ntp");
+                    xTaskCreate(graph_ntp_display_task, "graph ntp", 10 * 1024, NULL, 15, &graph_ntp_display_handle);
+                }
             }  
         } break;
 

@@ -4,7 +4,7 @@
  * @Author: Newt
  * @Date: 2022-11-06 22:50:51
  * @LastEditors: Newt
- * @LastEditTime: 2022-11-13 22:23:03
+ * @LastEditTime: 2022-12-10 23:18:02
  */
 #include <stdio.h>
 #include <string.h>
@@ -29,7 +29,6 @@ extern void wifi_init_sta(void);
 extern int ali_ntp_connect(void);
 extern void ESP_NVS_init(void);
 extern void station_example_function(void);
-extern void graph_ntp_display_task(void *parameter);
 
 void boot_print_info()
 {
@@ -73,8 +72,7 @@ void lvgl_init()
 
     lv_init();
     lv_port_disp_init();
-    // lv_obj_t *text_date = lv_label_create(lv_scr_act());
-    // lv_label_set_text_fmt(text_date, "%4u-%02u-%02u", 2022, 10, 3);
+
     extern void lv_tick_handle_init();
     lv_tick_handle_init();
 }
@@ -86,9 +84,5 @@ void app_main(void)
 
     printf("Start create task ali iot");
     xTaskHandle station_example_handle;
-    xTaskCreate(station_example_function, "ali iot", 4 * 1024, NULL, 15, &station_example_handle);
-    // station_example_function();
-    printf("Start create task graph ntp");
-    xTaskHandle graph_ntp_display_handle;
-    xTaskCreate(graph_ntp_display_task, "graph ntp", 10 * 1024, NULL, 15, &graph_ntp_display_handle);
+    xTaskCreate(station_example_function, "ali iot", 4 * 1024, NULL, 14, &station_example_handle);
 }
